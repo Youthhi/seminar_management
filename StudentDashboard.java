@@ -1,114 +1,170 @@
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class StudentDashboard extends JFrame implements ActionListener{
+public class StudentDashboard extends JFrame implements ActionListener {
+
+    // ===== Colors & Fonts =====
+    private final Color PRIMARY_COLOR = new Color(44, 62, 80);    // Dark Slate
+    private final Color ACCENT_COLOR = new Color(52, 152, 219);   // Bright Blue
+    private final Color BG_COLOR = new Color(236, 240, 241);      // Light Gray
+    private final Font HEADER_FONT = new Font("Segoe UI", Font.BOLD, 24);
+    private final Font LABEL_FONT = new Font("Segoe UI", Font.BOLD, 14);
+    private final Font INPUT_FONT = new Font("Segoe UI", Font.PLAIN, 14);
 
     // ===== Student fields =====
     private String studentId;
-    JTextField nameField = new JTextField(25);
-    JTextField titleField = new JTextField(25);
-    JTextArea abstractArea = new JTextArea(4, 25);
-    JTextField supervisorField = new JTextField(25);
-    JTextField presentationField = new JTextField(10);
+    JTextField nameField = createStyledTextField();
+    JTextField titleField = createStyledTextField();
+    JTextArea abstractArea = createStyledTextArea();
+    JTextField supervisorField = createStyledTextField();
+    JTextField presentationField = createStyledTextField();
 
     JButton uploadBtn = new JButton("Upload Presentation");
-    JLabel statusLabel = new JLabel("No file uploaded yet.");
+    JLabel statusLabel = new JLabel("Status: No file uploaded yet.");
 
     public StudentDashboard() {
-        setTitle("Student Dashboard");
-        setSize(550, 400);
+        setTitle("Student Research Portal");
+        setSize(600, 550); // Slightly larger for better spacing
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        getContentPane().setBackground(BG_COLOR);
 
-        // ===== Main card panel =====
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        // ==========================
+        // 1. Header Panel
+        // ==========================
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(PRIMARY_COLOR);
+        headerPanel.setPreferredSize(new Dimension(getWidth(), 80));
+        headerPanel.setBorder(new EmptyBorder(20, 30, 20, 30));
+
+        JLabel appTitle = new JLabel("Student Dashboard");
+        appTitle.setFont(HEADER_FONT);
+        appTitle.setForeground(Color.WHITE);
+        appTitle.setIcon(UIManager.getIcon("FileView.computerIcon")); // Built-in java icon
+        headerPanel.add(appTitle, BorderLayout.WEST);
+
+        add(headerPanel, BorderLayout.NORTH);
+
+        // ==========================
+        // 2. Main Form Panel (Center)
+        // ==========================
+        JPanel mainPanel = new JPanel(new GridBagLayout());
         mainPanel.setBackground(Color.WHITE);
+        mainPanel.setBorder(new EmptyBorder(30, 40, 30, 40));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10); // Padding between items
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // ===== Name row =====
-        JPanel namePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        namePanel.setOpaque(false);
-        JLabel nameLabel = new JLabel("Name:");
-        nameLabel.setPreferredSize(new Dimension(130, 25));
-        namePanel.add(nameLabel);
-        namePanel.add(nameField);
-        mainPanel.add(namePanel);
+        // --- Row 1: Name ---
+        addFormRow(mainPanel, gbc, 0, "Student Name:", nameField);
 
-        // ===== Research Title row =====
-        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        titlePanel.setOpaque(false);
-        JLabel titleLabel = new JLabel("Research Title:");
-        titleLabel.setPreferredSize(new Dimension(130, 25));
-        titlePanel.add(titleLabel);
-        titlePanel.add(titleField);
-        mainPanel.add(titlePanel);
+        // --- Row 2: Title ---
+        addFormRow(mainPanel, gbc, 1, "Research Title:", titleField);
 
-        // ===== Abstract row =====
-        JPanel abstractPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        abstractPanel.setOpaque(false);
-        JLabel abstractLabel = new JLabel("Abstract:");
-        abstractLabel.setPreferredSize(new Dimension(130, 25));
-        abstractArea.setLineWrap(true);
-        abstractArea.setWrapStyleWord(true);
+        // --- Row 3: Abstract ---
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.weightx = 0; gbc.anchor = GridBagConstraints.NORTHWEST;
+        JLabel absLabel = new JLabel("Abstract:");
+        absLabel.setFont(LABEL_FONT);
+        absLabel.setForeground(PRIMARY_COLOR);
+        mainPanel.add(absLabel, gbc);
+
+        gbc.gridx = 1; 
+        gbc.weightx = 1.0;
         JScrollPane abstractScroll = new JScrollPane(abstractArea);
-        abstractScroll.setPreferredSize(new Dimension(300, 80));
-        abstractPanel.add(abstractLabel);
-        abstractPanel.add(abstractScroll);
-        mainPanel.add(abstractPanel);
+        abstractScroll.setBorder(new LineBorder(new Color(200,200,200), 1, true));
+        abstractScroll.setPreferredSize(new Dimension(300, 100));
+        mainPanel.add(abstractScroll, gbc);
 
-        // ===== Supervisor row =====
-        JPanel supervisorPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        supervisorPanel.setOpaque(false);
-        JLabel supervisorLabel = new JLabel("Supervisor:");
-        supervisorLabel.setPreferredSize(new Dimension(130, 25));
-        supervisorPanel.add(supervisorLabel);
-        supervisorPanel.add(supervisorField);
-        mainPanel.add(supervisorPanel);
+        // --- Row 4: Supervisor ---
+        gbc.anchor = GridBagConstraints.CENTER; // Reset anchor
+        addFormRow(mainPanel, gbc, 3, "Supervisor:", supervisorField);
 
-        // ===== Presentation Type row =====
-        JPanel presentationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
-        presentationPanel.setOpaque(false);
-        JLabel presentationLabel = new JLabel("Presentation Type:");
-        presentationLabel.setPreferredSize(new Dimension(130, 25));
-        presentationPanel.add(presentationLabel);
-        presentationPanel.add(presentationField);
-        mainPanel.add(presentationPanel);
+        // --- Row 5: Type ---
+        addFormRow(mainPanel, gbc, 4, "Presentation Type:", presentationField);
 
-        // ===== Vertical space =====
-        mainPanel.add(Box.createVerticalStrut(20));
+        add(mainPanel, BorderLayout.CENTER);
 
-        // ===== Upload button row =====
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnPanel.setOpaque(false);
+        // ==========================
+        // 3. Action Panel (Bottom)
+        // ==========================
+        JPanel footerPanel = new JPanel(new BorderLayout());
+        footerPanel.setBackground(BG_COLOR);
+        footerPanel.setBorder(new EmptyBorder(20, 40, 20, 40));
+
+        // Style the button
+        uploadBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        uploadBtn.setBackground(ACCENT_COLOR);
+        uploadBtn.setForeground(Color.WHITE);
+        uploadBtn.setFocusPainted(false);
+        uploadBtn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        uploadBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         uploadBtn.addActionListener(this);
-        btnPanel.add(uploadBtn);
-        mainPanel.add(btnPanel);
 
-        mainPanel.add(Box.createVerticalStrut(10));
-        mainPanel.add(statusLabel);
+        statusLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        statusLabel.setForeground(Color.DARK_GRAY);
 
-        // ===== Center wrapper =====
-        JScrollPane scrollPane = new JScrollPane(mainPanel);
-        scrollPane.setBorder(null); // optional, cleaner look
-        add(scrollPane, BorderLayout.CENTER);
+        footerPanel.add(statusLabel, BorderLayout.WEST);
+        footerPanel.add(uploadBtn, BorderLayout.EAST);
+
+        add(footerPanel, BorderLayout.SOUTH);
 
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
-    // ===== Set student info =====
-   
-
-    public void setStudentInfo(String id,String name, String title, String abstractText,
-                               String supervisor, String presentationType,String Filepath) {
+    // ===== Helper to create rows =====
+    private void addFormRow(JPanel panel, GridBagConstraints gbc, int row, String labelText, JComponent input) {
+        gbc.gridy = row;
         
-        this.studentId = id;                      
+        // Label
+        gbc.gridx = 0;
+        gbc.weightx = 0.3;
+        JLabel label = new JLabel(labelText);
+        label.setFont(LABEL_FONT);
+        label.setForeground(PRIMARY_COLOR);
+        panel.add(label, gbc);
+
+        // Input
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        panel.add(input, gbc);
+    }
+
+    // ===== Styling Helpers =====
+    private JTextField createStyledTextField() {
+        JTextField tf = new JTextField(20);
+        tf.setFont(INPUT_FONT);
+        tf.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(200, 200, 200), 1, true), 
+            new EmptyBorder(5, 8, 5, 8)
+        ));
+        tf.setEditable(false); // Assuming this is a dashboard to VIEW info, make false. Set true if editable.
+        tf.setBackground(Color.WHITE);
+        return tf;
+    }
+
+    private JTextArea createStyledTextArea() {
+        JTextArea ta = new JTextArea();
+        ta.setFont(INPUT_FONT);
+        ta.setLineWrap(true);
+        ta.setWrapStyleWord(true);
+        ta.setEditable(false);
+        return ta;
+    }
+
+    // ===== Set student info =====
+    public void setStudentInfo(String id, String name, String title, String abstractText,
+                               String supervisor, String presentationType, String Filepath) {
+
+        this.studentId = id;
         nameField.setText(name);
         titleField.setText(title);
         abstractArea.setText(abstractText);
@@ -116,97 +172,93 @@ public class StudentDashboard extends JFrame implements ActionListener{
         presentationField.setText(presentationType);
 
         if (Filepath != null && !Filepath.isEmpty()) {
-        File f = new File(Filepath);
-        if (f.exists()) {
-            statusLabel.setText("Uploaded: " + f.getName());
+            File f = new File(Filepath);
+            if (f.exists()) {
+                statusLabel.setText("<html>Status: <font color='green'>Uploaded (" + f.getName() + ")</font></html>");
+                statusLabel.setIcon(UIManager.getIcon("FileView.fileIcon"));
+            } else {
+                statusLabel.setText("<html>Status: <font color='red'>File not found</font></html>");
+            }
         } else {
-            statusLabel.setText("File not found");
+            statusLabel.setText("Status: No file uploaded yet.");
         }
-    } else {
-        statusLabel.setText("No file uploaded yet.");
-    }
     }
 
-  
-  
-    
- @Override
-public void actionPerformed(ActionEvent e) {
-    String type = presentationField.getText().trim().toLowerCase();
-    if (e.getSource() == uploadBtn) {
-
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        String type = presentationField.getText().trim().toLowerCase();
         
-        JFileChooser chooser = new JFileChooser();
-        chooser.setAcceptAllFileFilterUsed(false);
+        if (e.getSource() == uploadBtn) {
 
-         if (type.equals("oral")) {
-        chooser.addChoosableFileFilter(
-            new FileNameExtensionFilter("PowerPoint Files", "ppt", "pptx")
-        );
-       } 
-        else if (type.equals("poster")) {
-        chooser.addChoosableFileFilter(
-            new FileNameExtensionFilter("PDF Files", "pdf")
-        );
-       } 
-       else {
-        JOptionPane.showMessageDialog(this, "Invalid presentation type");
-        return;
-        }
+            // Make text editable momentarily if you want to test without a database connection
+            // type = "oral"; 
 
-        int result = chooser.showOpenDialog(this);
-        if (result == JFileChooser.APPROVE_OPTION){
+            JFileChooser chooser = new JFileChooser();
+            chooser.setAcceptAllFileFilterUsed(false);
 
-        File selectedFile = chooser.getSelectedFile();
-        String fileName = selectedFile.getName().toLowerCase();
-
-    // backend validation
-     if (type.equals("oral") && !(fileName.endsWith(".ppt") || fileName.endsWith(".pptx"))) {
-        JOptionPane.showMessageDialog(this, "Oral presentations must be PPT/PPTX");
-        return;
-    }
-
-    if (type.equals("poster") && !fileName.endsWith(".pdf")) {
-        JOptionPane.showMessageDialog(this, "Poster presentations must be PDF");
-        return;
-    }
-
-        
-            
-
-
-            try {
-                File uploadDir = new File("uploads" + File.separator + studentId);
-                if (!uploadDir.exists()) {
-                 uploadDir.mkdirs();
-                 }
-
-                File destFile = new File(uploadDir, selectedFile.getName());
-
-                java.nio.file.Files.copy(
-                        selectedFile.toPath(),
-                        destFile.toPath(),
-                        java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            if (type.equals("oral")) {
+                chooser.addChoosableFileFilter(
+                        new FileNameExtensionFilter("PowerPoint Files (.ppt, .pptx)", "ppt", "pptx")
                 );
+            } else if (type.equals("poster")) {
+                chooser.addChoosableFileFilter(
+                        new FileNameExtensionFilter("PDF Files (.pdf)", "pdf")
+                );
+            } else {
+                JOptionPane.showMessageDialog(this, "Presentation Type must be set to 'Oral' or 'Poster' to upload.", "Configuration Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-                // tell controller to update the file path for this student
-                StudentController controller = new StudentController();
-                controller.updateStudentFile(studentId, destFile.getPath());
+            int result = chooser.showOpenDialog(this);
+            if (result == JFileChooser.APPROVE_OPTION) {
 
-                statusLabel.setText("Uploaded: " + destFile.getName());
-                JOptionPane.showMessageDialog(this, "File uploaded successfully!");
+                File selectedFile = chooser.getSelectedFile();
+                String fileName = selectedFile.getName().toLowerCase();
 
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Upload failed!");
+                // backend validation
+                if (type.equals("oral") && !(fileName.endsWith(".ppt") || fileName.endsWith(".pptx"))) {
+                    JOptionPane.showMessageDialog(this, "Oral presentations must be PPT/PPTX", "Invalid Format", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                if (type.equals("poster") && !fileName.endsWith(".pdf")) {
+                    JOptionPane.showMessageDialog(this, "Poster presentations must be PDF", "Invalid Format", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                try {
+                    File uploadDir = new File("uploads" + File.separator + studentId);
+                    if (!uploadDir.exists()) {
+                        uploadDir.mkdirs();
+                    }
+
+                    File destFile = new File(uploadDir, selectedFile.getName());
+
+                    java.nio.file.Files.copy(
+                            selectedFile.toPath(),
+                            destFile.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                    );
+
+                    // Placeholder for controller logic
+                     StudentController controller = new StudentController();
+                     controller.updateStudentFile(studentId, destFile.getPath());
+
+                    statusLabel.setText("<html>Status: <font color='green'>Uploaded (" + destFile.getName() + ")</font></html>");
+                    JOptionPane.showMessageDialog(this, "File uploaded successfully!");
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Upload failed!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
-        else{
-            System.out.println("Better luck next time....coding issue");
+    }
+    
+    // Mock Controller for compilation if you don't have the external file
+    class StudentController {
+        public void updateStudentFile(String id, String path) {
+            System.out.println("DB Update: ID=" + id + " Path=" + path);
         }
     }
 }
-  
-
-}
-
