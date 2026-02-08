@@ -1,6 +1,14 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import javax.swing.*;
 
 public class Register extends JFrame implements ActionListener {
@@ -184,6 +192,137 @@ public class Register extends JFrame implements ActionListener {
     // ===== LOGIC (UNCHANGED) =====
     @Override
     public void actionPerformed(ActionEvent e) {
-        // your existing logic here
+        String id = studentId.getText().trim();
+        String studentName = name.getText().trim();
+
+        if(e.getSource()==registerBtn){
+            if(id.isEmpty() || studentName.isEmpty()){
+
+                JOptionPane.showMessageDialog(this,"StudentID and name are required");
+                return;
+            }
+
+             boolean exists = false;
+          try (BufferedReader br = new BufferedReader(new FileReader("student.txt"))) {
+          String line;
+          while ((line = br.readLine()) != null) {
+            String[] data = line.split("\\|");
+            if(data[0].equals(id)) {
+                exists = true;
+                break;
+            }
+        }
+    }  catch(FileNotFoundException ex){
+        System.out.println("Student.txt doesnt exist yet. creating student.txt...");
+    }
+       catch(IOException ex) {
+        ex.printStackTrace();
+    }
+
+    if(exists){
+        JOptionPane.showMessageDialog(this, "StudentID already registered!");
+        return; // stop registration
+    }
+
+            String line = studentId.getText() + "|" +
+                      name.getText() + "|" +
+                      title.getText() + "|" +
+                      abstractArea.getText() + "|" +
+                      supervisor.getText() + "|" +
+                      (oralBtn.isSelected() ? "Oral" : "Poster") + "|" +
+                      ""; 
+            
+            try {
+            
+            File file = new File("student.txt");
+            if (!file.exists()) {
+                file.createNewFile(); 
+            }
+
+            
+            try (FileWriter fw = new FileWriter(file, true);
+                 BufferedWriter bw = new BufferedWriter(fw);
+                 PrintWriter out = new PrintWriter(bw)) {
+
+                out.println(line);
+                JOptionPane.showMessageDialog(this, "Registration successful!");
+                setRegistrationFormEnabled(false);
+                proceedBtn.setEnabled(true);
+
+            }
+
+            } catch (IOException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Error saving data!");
+        }
+
+        
+           StudentController controller = new StudentController();
+           Student student = controller.getStudentInfo(studentId.getText());
+
+        if (student != null) {
+          StudentDashboard dashboard = new StudentDashboard();
+          dashboard.setStudentInfo(
+          student.getStudentID(),  
+          student.getName(),
+          student.getResearchTitle(),
+          student.getAbstractText(),
+          student.getSupervisor(),
+          student.getPresentationType(),
+          student.getFilePath()
+    );
+    dashboard.setVisible(true);
+    JOptionPane.showMessageDialog(dashboard, "Redirected to StudentDashboard");
+
+    
+    this.dispose();
+} else {
+    JOptionPane.showMessageDialog(this, "Error directing to studentdashboard!");
+}
+
+
+
+        }
+
+        else if(e.getSource()==proceedBtn){
+          
+            
+
+            StudentController controller = new StudentController();
+            Student student = controller.getStudentInfo(id);
+
+            if (student == null) {
+               JOptionPane.showMessageDialog(this, "Student not found!");
+               return;
+            }
+
+            StudentDashboard dashboard = new StudentDashboard();
+            dashboard.setStudentInfo(
+            student.getStudentID(),    
+            student.getName(),
+            student.getResearchTitle(),
+            student.getAbstractText(),
+            student.getSupervisor(),
+            student.getPresentationType(),
+            student.getFilePath()
+            );
+            dashboard.setVisible(true);
+            JOptionPane.showMessageDialog(dashboard,"Redirected to StudentDashboard");
+            
+            this.dispose();
+    
+
+
+
+
+            //J//OptionPane.showMessageDialog(this,"Redirecting to StudentDashboard");
+            //dispose();
+        }
+
+        else{
+            //nothing
+        }
+
+  
     }
 }

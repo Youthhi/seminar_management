@@ -10,10 +10,9 @@ public class Login extends JFrame implements ActionListener {
     Color textDark = new Color(30, 41, 59);      // Slate Dark
 
     JButton loginButton = new JButton("Login");
-    JCheckBox studentBox = new JCheckBox("Student");
-    JCheckBox coordinatorBox = new JCheckBox("Coordinator");
-    JCheckBox evaluatorBox = new JCheckBox("Evaluator");
-
+    JRadioButton studentBox = new JRadioButton("Student");
+    JRadioButton coordinatorBox = new JRadioButton("Coordinator");
+    JRadioButton evaluatorBox = new JRadioButton("Evaluator");
     Login() {
         this.setTitle("System Login");
         this.setSize(450, 500);
@@ -42,6 +41,13 @@ public class Login extends JFrame implements ActionListener {
         subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         subtitle.setForeground(Color.GRAY);
         subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        ButtonGroup roleGroup = new ButtonGroup();
+        roleGroup.add(studentBox);
+        roleGroup.add(coordinatorBox);
+        roleGroup.add(evaluatorBox);
+
+        studentBox.setSelected(true);
 
         // Style the Checkboxes
         styleRoleBox(studentBox);
@@ -74,23 +80,47 @@ public class Login extends JFrame implements ActionListener {
         this.setVisible(true);
     }
 
-    private void styleRoleBox(JCheckBox cb) {
-        cb.setBackground(Color.WHITE);
-        cb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        cb.setFocusPainted(false);
-        cb.setAlignmentX(Component.CENTER_ALIGNMENT);
-        cb.setBorder(new EmptyBorder(5, 0, 5, 0));
+private void styleRoleBox(JRadioButton rb) {
+        rb.setBackground(Color.WHITE);
+        rb.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        rb.setFocusPainted(false);
+        rb.setAlignmentX(Component.CENTER_ALIGNMENT);
+        rb.setBorder(new EmptyBorder(5, 0, 5, 0));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == loginButton) {
-            if (studentBox.isSelected()) {
-                new Register(); // Open Register Screen
-                dispose();      // Close Login Screen
-            } else {
-                JOptionPane.showMessageDialog(this, "Please select 'Student' to Register.");
+        if (coordinatorBox.isSelected()) {
+            new CoordinatorDashboard().setVisible(true);
+            this.dispose();
+        } 
+        else if (evaluatorBox.isSelected()) {
+            // 1. Ask for the Evaluator's ID (to satisfy Hemaraj's requirement)
+            String evalId = JOptionPane.showInputDialog(this, "Enter Evaluator ID (e.g., E001):");
+            
+            if (evalId != null && !evalId.trim().isEmpty()) {
+                // 2. Open the Dashboard FIRST (to see the list of assigned students)
+                // This matches the logic we discussed earlier!
+                new EvaluatorDashboard(evalId.trim()).setVisible(true);
+                this.dispose();
             }
+        } 
+        else if (studentBox.isSelected()) {
+            new Register().setVisible(true);
+            this.dispose();
         }
     }
+}
+    // @Override
+    // public void actionPerformed(ActionEvent e) {
+    //     if (e.getSource() == loginButton) {
+    //         if (studentBox.isSelected()) {
+    //             new Register(); // Open Register Screen
+    //             dispose();      // Close Login Screen
+    //         } else {
+    //             JOptionPane.showMessageDialog(this, "Please select 'Student' to Register.");
+    //         }
+    //     }
+    // }
 }
